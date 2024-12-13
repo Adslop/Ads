@@ -1,0 +1,52 @@
+name: Build APK
+
+on:
+  push:
+    branches:
+      - main  # Trigger build on changes to the "main" branch
+  pull_request:
+    branches:
+      - main  # Trigger build for pull requests to "main" branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Use a fresh Ubuntu virtual machine for the build
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2  # Checkout the repository code
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'  # Set the Python version you want to use
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip build-essential libssl-dev libffi-dev python3-dev
+          pip install --upgrade pip
+          pip install buildozer  # Install Buildozer
+          sudo apt install -y git  # Install Git
+
+      - name: Install Android dependencies
+        run: |
+          sudo apt install -y openjdk-8-jdk  # Install Java Development Kit
+          sudo apt install -y android-sdk  # Install Android SDK
+          sudo apt install -y android-ndk  # Install Android NDK
+
+      - name: Set up Android SDK
+        run: |
+          export ANDROID_HOME=$HOME/android-sdk-linux
+          export PATH=$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$PATH
+          echo "android sdk home: $ANDROID_HOME"
+
+      - name: Build APK using Buildozer
+        run: |
+          buildozer android debug  # Run Buildozer to create the APK
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: chess-prediction-app.apk
+          path: bin/*.apk  # Upload the generated APK file from the build process
