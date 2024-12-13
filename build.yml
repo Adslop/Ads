@@ -1,0 +1,29 @@
+name: Build APK with Buildozer
+
+on:
+  push:
+    branches:
+      - main   # Trigger the workflow on push to the 'main' branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest   # This specifies the environment where the job runs (Ubuntu server)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2  # This step checks out the repository's code so it's available in the next steps
+
+      - name: Set up Python
+        uses: actions/setup-python@v2  # This step sets up the Python environment in the GitHub Action
+        with:
+          python-version: '3.x'   # This specifies that Python 3 should be used
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip build-essential git openjdk-8-jdk cmake
+          pip install buildozer  # Install the Buildozer tool via pip
+          
+      - name: Build APK
+        run: |
+          buildozer android debug  # This runs the Buildozer command to build the APK for Android
